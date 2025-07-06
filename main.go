@@ -40,5 +40,6 @@ func main() {
 
 	router := gin.Default()
 	router.GET("/items", itemController.FindAll)
-	router.Run("localhost:8080") // 0.0.0.0:8080 でサーバーを立てます。
+	router.GET("/items/:id", itemController.FindById)
+	router.Run("localhost:8080")
 }
