@@ -9,10 +9,10 @@ import (
 
 type IItemRepository interface {
 	FindAll() (*[]models.Item, error)
-	FindById(itemId uint) (*models.Item, error)
+	FindById(itemId uint, userId uint) (*models.Item, error)
 	Create(newItem models.Item) (*models.Item, error)
 	Update(updateItem models.Item) (*models.Item, error)
-	Delete(itemId uint) error
+	Delete(itemId uint, userId uint) error
 }
 
 type ItemMemoryRepository struct {
@@ -29,9 +29,9 @@ func (r *ItemMemoryRepository) FindAll() (*[]models.Item, error) {
 	return &r.items, nil
 }
 
-func (r *ItemMemoryRepository) FindById(itemId uint) (*models.Item, error) {
+func (r *ItemMemoryRepository) FindById(itemId uint, userId uint) (*models.Item, error) {
 	for _, v := range r.items {
-		if v.ID == itemId {
+		if v.ID == itemId && v.UserID == userId {
 			return &v, nil
 		}
 	}
@@ -55,9 +55,9 @@ func (r *ItemMemoryRepository) Update(updateItem models.Item) (*models.Item, err
 	return nil, errors.New("Unexpected error")
 }
 
-func (r *ItemMemoryRepository) Delete(itemId uint) error {
+func (r *ItemMemoryRepository) Delete(itemId uint, userId uint) error {
 	for i, v := range r.items {
-		if v.ID == itemId {
+		if v.ID == itemId && v.UserID == userId {
 			r.items = append(r.items[:i], r.items[i+1:]...)
 			return nil
 		}
@@ -77,8 +77,8 @@ func (r *ItemRepository) Create(newItem models.Item) (*models.Item, error) {
 	return &newItem, nil
 }
 
-func (r *ItemRepository) Delete(itemId uint) error {
-	deleteItem, err := r.FindById(itemId)
+func (r *ItemRepository) Delete(itemId uint, userId uint) error {
+	deleteItem, err := r.FindById(itemId, userId)
 	if err != nil {
 		return err
 	}
@@ -98,9 +98,9 @@ func (r *ItemRepository) FindAll() (*[]models.Item, error) {
 	return &items, nil
 }
 
-func (r *ItemRepository) FindById(itemId uint) (*models.Item, error) {
+func (r *ItemRepository) FindById(itemId uint, userId uint) (*models.Item, error) {
 	var item models.Item
-	result := r.db.First(&item, itemId)
+	result := r.db.First(&item, "id = ? AND user_id = ?", itemId, userId)
 	if result.Error != nil {
 		return nil, result.Error
 	}
